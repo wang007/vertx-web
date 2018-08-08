@@ -21,11 +21,12 @@ import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Session;
-
-import java.util.ServiceLoader;
+import io.vertx.ext.web.sstore.impl.ClusteredSessionStoreImpl;
+import io.vertx.ext.web.sstore.impl.LocalSessionStoreImpl;
 
 /**
  * A session store is used to store sessions for an Vert.x-Web web app
@@ -40,39 +41,39 @@ public interface SessionStore {
    * Create a Session store given a backend and configuration JSON.
    *
    * @param vertx vertx instance
-   * @param backend the backend type
    * @return the store or runtime exception
    */
-  static SessionStore create(Vertx vertx, String backend) {
-    return create(vertx, backend, new JsonObject());
+  static SessionStore create(Vertx vertx) {
+    return create(vertx, new JsonObject());
   }
 
   /**
    * Create a Session store given a backend and configuration JSON.
    *
    * @param vertx vertx instance
-   * @param backend the backend type
    * @param options extra options for initialization
    * @return the store or runtime exception
    */
-  static SessionStore create(Vertx vertx, String backend, JsonObject options) {
-    ServiceLoader<SessionStore> serviceLoader = ServiceLoader.load(SessionStore.class);
+  static SessionStore create(Vertx vertx, JsonObject options) {
+    SessionStore defaultStore;
 
-    for (SessionStore store : serviceLoader) {
-      if (store.id().equalsIgnoreCase(backend)) {
-        return store.init(vertx, options);
+    try {
+      defaultStore = ServiceHelper.loadFactoryOrNull(SessionStore.class);
+      if (defaultStore != null) {
+        return defaultStore.init(vertx, options);
       }
+    } catch (RuntimeException e) {
+      // ignore that it cannot be loaded, falling back to the next
     }
 
-    throw new RuntimeException("Backend [" + backend + "] not available!");
-  }
+    if (vertx.isClustered()) {
+      defaultStore = new ClusteredSessionStoreImpl();
+    } else {
+      defaultStore = new LocalSessionStoreImpl();
+    }
 
-  /**
-   * Unique identifier for a store.
-   *
-   * @return non null string
-   */
-  String id();
+    return defaultStore.init(vertx, options);
+  }
 
   /**
    * Initialize this store.

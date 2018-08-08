@@ -124,7 +124,6 @@ public abstract class SessionHandlerTestBase extends WebTestBase {
     router.route().handler(rc -> {
       Session sess = rc.session();
       assertNotNull(sess);
-//      assertTrue(System.currentTimeMillis() - sess.lastAccessed() < 500);
       assertNotNull(sess.id());
       switch (requestCount.get()) {
         case 0:
@@ -171,7 +170,7 @@ public abstract class SessionHandlerTestBase extends WebTestBase {
     router.route().handler(rc -> {
       Session sess = rc.session();
       assertNotNull(sess);
-//      assertTrue(System.currentTimeMillis() - sess.lastAccessed() < 500);
+      assertTrue(System.currentTimeMillis() - sess.lastAccessed() < 500);
       assertNotNull(sess.id());
       switch (requestCount.get()) {
         case 0:
@@ -196,14 +195,14 @@ public abstract class SessionHandlerTestBase extends WebTestBase {
     CountDownLatch latch1 = new CountDownLatch(1);
     Thread.sleep(500); // FIXME -Needed because session.destroy is async :(
     store.size(onSuccess(res -> {
-      assumeTrue(1 == res);
+      assertEquals(1, res.intValue());
       latch1.countDown();
     }));
     awaitLatch(latch1);
     Thread.sleep(2 * (LocalSessionStore.DEFAULT_REAPER_INTERVAL + timeout));
     CountDownLatch latch2 = new CountDownLatch(1);
     store.size(onSuccess(res -> {
-      assumeTrue(0 == res);
+      assertEquals(0, res.intValue());
       latch2.countDown();
     }));
     awaitLatch(latch2);
@@ -343,9 +342,7 @@ public abstract class SessionHandlerTestBase extends WebTestBase {
     // ensure that on the second call, in case of error, the cookie is not present
     testRequest(HttpMethod.GET, "/", req -> req.putHeader("cookie", sessionID.get()), resp -> assertNull(resp.headers().get("set-cookie")), 500, "Internal Server Error", null);
     // ensure that on the third call, the session is still valid
-    testRequest(HttpMethod.GET, "/", req -> req.putHeader("cookie", sessionID.get()), resp -> {
-      assertNull(resp.headers().get("set-cookie"));
-    }, 200, "OK", null);
+    testRequest(HttpMethod.GET, "/", req -> req.putHeader("cookie", sessionID.get()), resp -> assertNull(resp.headers().get("set-cookie")), 200, "OK", null);
   }
 
   private final DateFormat dateTimeFormatter = Utils.createRFC1123DateTimeFormatter();

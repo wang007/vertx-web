@@ -425,7 +425,8 @@ public class WebExamples {
 
   public void example20(Router router) {
 
-    Route route1 = router.route("/some/path/").handler(routingContext -> {
+    Route route = router.route("/some/path/");
+    route.handler(routingContext -> {
 
       HttpServerResponse response = routingContext.response();
       // enable chunked responses because we will be adding data as
@@ -439,7 +440,7 @@ public class WebExamples {
       routingContext.vertx().setTimer(5000, tid -> routingContext.next());
     });
 
-    Route route2 = router.route("/some/path/").handler(routingContext -> {
+    route.handler(routingContext -> {
 
       HttpServerResponse response = routingContext.response();
       response.write("route2\n");
@@ -448,7 +449,7 @@ public class WebExamples {
       routingContext.vertx().setTimer(5000, tid -> routingContext.next());
     });
 
-    Route route3 = router.route("/some/path/").handler(routingContext -> {
+    route.handler(routingContext -> {
 
       HttpServerResponse response = routingContext.response();
       response.write("route3");
@@ -642,24 +643,17 @@ public class WebExamples {
   public void example31(Vertx vertx) {
 
     // Create a local session store using defaults
-    SessionStore store1 = SessionStore.create(vertx, "local");
+    SessionStore store1 = LocalSessionStore.create(vertx);
 
     // Create a local session store specifying the local shared map name to use
     // This might be useful if you have more than one application in the same
     // Vert.x instance and want to use different maps for different applications
-    SessionStore store2 = SessionStore.create(
-      vertx,
-      "local",
-      new JsonObject().put("mapName", "myapp3.sessionmap"));
+    SessionStore store2 = LocalSessionStore.create(vertx, "myapp3.sessionmap");
 
     // Create a local session store specifying the local shared map name to use and
     // setting the reaper interval for expired sessions to 10 seconds
-    SessionStore store3 = SessionStore.create(
-      vertx,
-      "local",
-      new JsonObject()
-        .put("mapName", "myapp3.sessionmap")
-        .put("reaperInterval", 10000));
+    SessionStore store3 = LocalSessionStore.create(vertx, "myapp3.sessionmap", 10000);
+
   }
 
   public void example32() {
@@ -670,15 +664,12 @@ public class WebExamples {
       Vertx vertx = res.result();
 
       // Create a clustered session store using defaults
-      SessionStore store1 = SessionStore.create(vertx, "cluster");
+      SessionStore store1 = ClusteredSessionStore.create(vertx);
 
       // Create a clustered session store specifying the distributed map name to use
       // This might be useful if you have more than one application in the cluster
       // and want to use different maps for different applications
-      SessionStore store2 = SessionStore.create(
-        vertx,
-        "cluster",
-        new JsonObject().put("mapName", "myclusteredapp.sessionmap"));
+      SessionStore store2 = ClusteredSessionStore.create(vertx, "myclusteredapp3.sessionmap");
     });
 
   }
@@ -691,7 +682,7 @@ public class WebExamples {
     router.route().handler(CookieHandler.create());
 
     // Create a clustered session store using defaults
-    SessionStore store = SessionStore.create(vertx, "cluster");
+    SessionStore store = ClusteredSessionStore.create(vertx);
 
     SessionHandler sessionHandler = SessionHandler.create(store);
 
@@ -736,7 +727,7 @@ public class WebExamples {
   public void example37(Vertx vertx, AuthProvider authProvider, Router router) {
 
     router.route().handler(CookieHandler.create());
-    router.route().handler(SessionHandler.create(SessionStore.create(vertx, "local")));
+    router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
     AuthHandler basicAuthHandler = BasicAuthHandler.create(authProvider);
   }
@@ -744,7 +735,7 @@ public class WebExamples {
   public void example38(Vertx vertx, AuthProvider authProvider, Router router) {
 
     router.route().handler(CookieHandler.create());
-    router.route().handler(SessionHandler.create(SessionStore.create(vertx, "local")));
+    router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
     router.route().handler(UserSessionHandler.create(authProvider));
 
     AuthHandler basicAuthHandler = BasicAuthHandler.create(authProvider);
@@ -1290,28 +1281,26 @@ public class WebExamples {
     );
     // Entry point to the application, this will render
     // a custom template.
-    router.get("/").handler(ctx -> {
-      ctx.response()
-        .putHeader("Content-Type", "text/html")
-        .end(
-          "<html>\n" +
-          "  <body>\n" +
-          "    <p>\n" +
-          "      Well, hello there!\n" +
-          "    </p>\n" +
-          "    <p>\n" +
-          "      We're going to the protected resource, if there is no\n" +
-          "      user in the session we will talk to the GitHub API. Ready?\n" +
-          "      <a href=\"/protected\">Click here</a> to begin!</a>\n" +
-          "    </p>\n" +
-          "    <p>\n" +
-          "      <b>If that link doesn't work</b>, remember to provide\n" +
-          "      your own <a href=\"https://github.com/settings/applications/new\">\n" +
-          "      Client ID</a>!\n" +
-          "    </p>\n" +
-          "  </body>\n" +
-          "</html>");
-    });
+    router.get("/").handler(ctx -> ctx.response()
+      .putHeader("Content-Type", "text/html")
+      .end(
+        "<html>\n" +
+        "  <body>\n" +
+        "    <p>\n" +
+        "      Well, hello there!\n" +
+        "    </p>\n" +
+        "    <p>\n" +
+        "      We're going to the protected resource, if there is no\n" +
+        "      user in the session we will talk to the GitHub API. Ready?\n" +
+        "      <a href=\"/protected\">Click here</a> to begin!</a>\n" +
+        "    </p>\n" +
+        "    <p>\n" +
+        "      <b>If that link doesn't work</b>, remember to provide\n" +
+        "      your own <a href=\"https://github.com/settings/applications/new\">\n" +
+        "      Client ID</a>!\n" +
+        "    </p>\n" +
+        "  </body>\n" +
+        "</html>"));
     // The protected resource
     router.get("/protected").handler(ctx -> {
       // at this moment your user object should contain the info

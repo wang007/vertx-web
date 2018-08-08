@@ -24,6 +24,15 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * The abstract session class provides a barebones implementation for session storage implementors.
+ *
+ * This class will contain all the related data required for a session plus a couple of helper methods to verify the
+ * integrity and versioning of the data. This checksum is important to reduce the amount of times data is pushed to
+ * be stored on a backend.
+ *
+ * As a Vert.x Web user, you should not have to deal with this class directly but with the public interface that it
+ * implements.
+ *
  * @author <a href="mailto:plopes@redhat.com">Paulo Lopes</a>
  */
 public abstract class AbstractSession implements Session {
@@ -74,8 +83,9 @@ public abstract class AbstractSession implements Session {
   private int crc;
 
   /**
-   * Important note: This constructor (even though not referenced anywhere) is required for serialization purposes. Do
-   * not remove.
+   * This constructor is <b>mandatory</b> (even though not referenced anywhere) is required for
+   * serialization purposes. Do not remove. It is required as part of the contract of the ClusterSerializable
+   * interface which some implementations might require.
    */
   public AbstractSession() {
   }
