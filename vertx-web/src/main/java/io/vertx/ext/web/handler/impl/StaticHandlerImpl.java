@@ -24,10 +24,12 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.HttpVersion;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.impl.HttpUtils;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.net.impl.URIDecoder;
 import io.vertx.ext.web.Http2PushMapping;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -138,7 +140,7 @@ public class StaticHandlerImpl implements StaticHandler {
       if (log.isTraceEnabled()) log.trace("Not GET or HEAD so ignoring request");
       context.next();
     } else {
-      String path = Utils.removeDots(Utils.urlDecode(context.normalisedPath(), false));
+      String path = HttpUtils.removeDots(URIDecoder.decodeURIComponent(context.normalisedPath(), false));
       // if the normalized path is null it cannot be resolved
       if (path == null) {
         log.warn("Invalid path: " + context.request().path());
@@ -385,8 +387,8 @@ public class StaticHandlerImpl implements StaticHandler {
 
         // Wrap the sendFile operation into a TCCL switch, so the file resolver would find the file from the set
         // classloader (if any).
-        final Long finalOffset = offset;
-        final Long finalEnd = end;
+        final long finalOffset = offset;
+        final long finalLength = end + 1 - offset;
         wrapInTCCLSwitch(() -> {
           // guess content type
           String contentType = MimeMapping.getMimeTypeForFilename(file);
@@ -398,7 +400,7 @@ public class StaticHandlerImpl implements StaticHandler {
             }
           }
 
-          return request.response().sendFile(file, finalOffset, finalEnd + 1, res2 -> {
+          return request.response().sendFile(file, finalOffset, finalLength, res2 -> {
             if (res2.failed()) {
               context.fail(res2.cause());
             }
@@ -762,7 +764,7 @@ public class StaticHandlerImpl implements StaticHandler {
   private String getFileExtension(String file) {
     int li = file.lastIndexOf(46);
     if (li != -1 && li != file.length() - 1) {
-      return file.substring(li + 1, file.length());
+      return file.substring(li + 1);
     } else {
       return null;
     }

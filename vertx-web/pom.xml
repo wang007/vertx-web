@@ -6,7 +6,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-web-parent</artifactId>
-    <version>3.6.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -31,6 +31,10 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-common</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-auth-common</artifactId>
@@ -75,16 +79,10 @@
       <version>1.7.21</version>
       <scope>test</scope>
     </dependency>
-    <!-- Required for testing with WebTestWithWebClientBase -->
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-web-client</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>2.17.0</version>
+      <version>2.22.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -202,24 +200,11 @@
         <configuration>
           <bnd><![CDATA[
           Import-Package: \
-            groovy.lang.*;resolution:=optional,\
-            org.codehaus.groovy.*;resolution:=optional,\
-            kotlin.*;resolution:=optional,\
-            io.vertx.groovy.*;resolution:=optional,\
-            io.vertx.ext.auth,\
+            io.vertx.ext.auth;resolution:=optional,\
             io.vertx.ext.auth.*;resolution:=optional,\
-            io.vertx.ext.bridge,\
+            io.vertx.ext.bridge;resolution:=optional,\
             io.vertx.ext.bridge.*;resolution:=optional,\
-            io.vertx.lang.rxjava.*;resolution:=optional,\
-            io.vertx.lang.groovy.*;resolution:=optional,\
             io.vertx.codegen.annotations;resolution:=optional,\
-            io.vertx.rx.java;resolution:=optional,\
-            io.vertx.rxjava.core.*;resolution:=optional,\
-            io.vertx.rxjava.ext.auth.*;resolution:=optional,\
-            rx.*;resolution:=optional,\
-            io.reactivex.*;resolution:=optional,\
-            io.vertx.lang.reactivex.*;resolution:=optional,\
-            io.vertx.reactivex.*;resolution:=optional,\
             *
           -exportcontents: !*impl, !examples, *
           ]]></bnd>
