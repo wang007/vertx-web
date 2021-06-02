@@ -26,7 +26,9 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.handler.HttpException;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -38,6 +40,27 @@ import java.util.function.Function;
  */
 @VertxGen
 public interface Route {
+
+  /**
+   * add metadata to this route. Used for saved extra data.
+   *
+   * @param key the metadata of key
+   * @param value the metadata of value
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  default Route metadata(String key, Object value) {
+    return metadata(Collections.singletonMap(key, value));
+  }
+
+  /**
+   * add metadata to this route. Used for saved extra data.
+   *
+   * @param metadata the metadata
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  Route metadata(Map<String, Object> metadata);
 
   /**
    * Add an HTTP method for this route. By default a route will match all HTTP methods. If any are specified then the route
@@ -218,6 +241,23 @@ public interface Route {
    */
   @Fluent
   Route useNormalizedPath(boolean useNormalizedPath);
+
+  /**
+   * @return the metadata of this route, never returns null.
+   */
+  Map<String, Object> metadata();
+
+  /**
+   * Get some data from metadata.
+   *
+   * @param key the key for the metadata
+   * @param <T> the type of the data
+   * @return  the data
+   */
+  @SuppressWarnings("unchecked")
+  default <T> T getMetadataValue(String key) {
+    return (T) metadata().get(key);
+  }
 
   /**
    * @return the path prefix (if any) for this route

@@ -2976,4 +2976,18 @@ public class RouterTest extends WebTestBase {
     testRequest(HttpMethod.GET, "/q/swagger/", 200, "OK");
     testRequest(HttpMethod.GET, "/q/swagger/index.html", 200, "OK");
   }
+
+  @Test
+  public void testMetadata() throws Exception {
+    router.route("/metadata")
+      .metadata("abc", "123")
+      .handler(rc -> {
+        Route route = rc.currentRoute();
+        String value = route.getMetadataValue("abc");
+        rc.end(value);
+      });
+
+    testRequest(HttpMethod.GET, "/metadata", 200, "OK", "123");
+  }
+
 }

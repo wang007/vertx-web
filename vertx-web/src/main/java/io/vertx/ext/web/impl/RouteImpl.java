@@ -73,6 +73,12 @@ public class RouteImpl implements Route {
   }
 
   @Override
+  public synchronized Route metadata(Map<String, Object> metadata) {
+    state = state.putMetadata(metadata);
+    return this;
+  }
+
+  @Override
   public synchronized Route method(HttpMethod method) {
     state = state.addMethod(method);
     return this;
@@ -212,6 +218,12 @@ public class RouteImpl implements Route {
   public synchronized Route useNormalizedPath(boolean useNormalizedPath) {
     state = state.setUseNormalizedPath(useNormalizedPath);
     return this;
+  }
+
+  @Override
+  public Map<String, Object> metadata() {
+    Map<String, Object> metadata = state.getMetadata();
+    return metadata != null ? metadata : Collections.emptyMap();
   }
 
   @Override

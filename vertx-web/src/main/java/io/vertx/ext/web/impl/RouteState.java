@@ -37,6 +37,7 @@ final class RouteState {
 
   private final RouteImpl route;
 
+  private final Map<String, Object> metadata;
   private final String path;
   private final String name;
   private final int order;
@@ -57,8 +58,9 @@ final class RouteState {
   private final boolean exclusive;
   private final boolean exactPath;
 
-  private RouteState(RouteImpl route, String path, String name, int order, boolean enabled, Set<HttpMethod> methods, Set<MIMEHeader> consumes, boolean emptyBodyPermittedWithConsumes, Set<MIMEHeader> produces, List<Handler<RoutingContext>> contextHandlers, List<Handler<RoutingContext>> failureHandlers, boolean added, Pattern pattern, List<String> groups, boolean useNormalizedPath, Set<String> namedGroupsInRegex, Pattern virtualHostPattern, boolean pathEndsWithSlash, boolean exclusive, boolean exactPath) {
+  private RouteState(RouteImpl route, Map<String, Object> metadata, String path, String name, int order, boolean enabled, Set<HttpMethod> methods, Set<MIMEHeader> consumes, boolean emptyBodyPermittedWithConsumes, Set<MIMEHeader> produces, List<Handler<RoutingContext>> contextHandlers, List<Handler<RoutingContext>> failureHandlers, boolean added, Pattern pattern, List<String> groups, boolean useNormalizedPath, Set<String> namedGroupsInRegex, Pattern virtualHostPattern, boolean pathEndsWithSlash, boolean exclusive, boolean exactPath) {
     this.route = route;
+    this.metadata = metadata;
     this.path = path;
     this.name = name;
     this.order = order;
@@ -83,6 +85,7 @@ final class RouteState {
   RouteState(RouteImpl route, int order) {
     this(
       route,
+      null,
       null,
       null,
       order,
@@ -112,6 +115,37 @@ final class RouteState {
     return route.router();
   }
 
+  public RouteState putMetadata(Map<String, Object> metadata) {
+    Map<String, Object> local = this.metadata == null ? new HashMap<>() : new HashMap<>(this.metadata);
+    local.putAll(metadata);
+    return new RouteState(
+      this.route,
+      Collections.unmodifiableMap(local),
+      this.path,
+      this.name,
+      this.order,
+      this.enabled,
+      this.methods,
+      this.consumes,
+      this.emptyBodyPermittedWithConsumes,
+      this.produces,
+      this.contextHandlers,
+      this.failureHandlers,
+      this.added,
+      this.pattern,
+      this.groups,
+      this.useNormalizedPath,
+      this.namedGroupsInRegex,
+      this.virtualHostPattern,
+      this.pathEndsWithSlash,
+      this.exclusive,
+      this.exactPath);
+  }
+
+  public Map<String, Object> getMetadata() {
+    return metadata;
+  }
+
   public String getPath() {
     return path;
   }
@@ -119,6 +153,7 @@ final class RouteState {
   RouteState setPath(String path) {
     return new RouteState(
       this.route,
+      this.metadata,
       path,
       this.name,
       this.order,
@@ -147,6 +182,7 @@ final class RouteState {
   RouteState setOrder(int order) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       order,
@@ -175,6 +211,7 @@ final class RouteState {
   RouteState setEnabled(boolean enabled) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -203,6 +240,7 @@ final class RouteState {
   RouteState setMethods(Set<HttpMethod> methods) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -227,6 +265,7 @@ final class RouteState {
   public RouteState addMethod(HttpMethod method) {
     RouteState newState = new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -258,6 +297,7 @@ final class RouteState {
   RouteState setConsumes(Set<MIMEHeader> consumes) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -282,6 +322,7 @@ final class RouteState {
   RouteState addConsume(MIMEHeader mime) {
     RouteState newState = new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -313,6 +354,7 @@ final class RouteState {
   RouteState setEmptyBodyPermittedWithConsumes(boolean emptyBodyPermittedWithConsumes) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -341,6 +383,7 @@ final class RouteState {
   RouteState setProduces(Set<MIMEHeader> produces) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -365,6 +408,7 @@ final class RouteState {
   RouteState addProduce(MIMEHeader mime) {
     RouteState newState = new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -400,6 +444,7 @@ final class RouteState {
   RouteState setContextHandlers(List<Handler<RoutingContext>> contextHandlers) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -424,6 +469,7 @@ final class RouteState {
   RouteState addContextHandler(Handler<RoutingContext> contextHandler) {
     RouteState newState = new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -459,6 +505,7 @@ final class RouteState {
   RouteState setFailureHandlers(List<Handler<RoutingContext>> failureHandlers) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -483,6 +530,7 @@ final class RouteState {
   RouteState addFailureHandler(Handler<RoutingContext> failureHandler) {
     RouteState newState = new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -514,6 +562,7 @@ final class RouteState {
   RouteState setAdded(boolean added) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -542,6 +591,7 @@ final class RouteState {
   RouteState setPattern(Pattern pattern) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -570,6 +620,7 @@ final class RouteState {
   RouteState setGroups(List<String> groups) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -594,6 +645,7 @@ final class RouteState {
   RouteState addGroup(String group) {
     RouteState newState = new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -625,6 +677,7 @@ final class RouteState {
   RouteState setUseNormalizedPath(boolean useNormalizedPath) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -653,6 +706,7 @@ final class RouteState {
   RouteState setNamedGroupsInRegex(Set<String> namedGroupsInRegex) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -677,6 +731,7 @@ final class RouteState {
   RouteState addNamedGroupInRegex(String namedGroupInRegex) {
     RouteState newState = new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -708,6 +763,7 @@ final class RouteState {
   RouteState setVirtualHostPattern(Pattern virtualHostPattern) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -736,6 +792,7 @@ final class RouteState {
   RouteState setPathEndsWithSlash(boolean pathEndsWithSlash) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -764,6 +821,7 @@ final class RouteState {
   RouteState setExclusive(boolean exclusive) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -792,6 +850,7 @@ final class RouteState {
   RouteState setExactPath(boolean exactPath) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       this.name,
       this.order,
@@ -815,6 +874,7 @@ final class RouteState {
   RouteState setName(String name) {
     return new RouteState(
       this.route,
+      this.metadata,
       this.path,
       name,
       this.order,
